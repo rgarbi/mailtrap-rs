@@ -1,6 +1,6 @@
-use std::iter::Map;
 use fake::Optional;
 use serde::{Deserialize, Serialize};
+use std::iter::Map;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct EmailWithText {
@@ -64,7 +64,13 @@ pub struct Attachment {
 }
 
 impl Attachment {
-    pub fn new(content: String, content_type: mime, filename: String, disposition: Disposition, content_id: String) -> Attachment {
+    pub fn new(
+        content: String,
+        content_type: mime,
+        filename: String,
+        disposition: Disposition,
+        content_id: String,
+    ) -> Attachment {
         return Attachment {
             content,
             content_type,
@@ -74,7 +80,6 @@ impl Attachment {
         };
     }
 }
-
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct EmailAddress {
@@ -87,19 +92,11 @@ impl EmailAddress {
         let email_result = ValidEmail::parse(email);
 
         return match email_result {
-            Ok(email) => {
-                Ok(EmailAddress {
-                    email,
-                    name,
-                })
-            }
-            Err(err) => {
-                Err(err)
-            }
+            Ok(email) => Ok(EmailAddress { email, name }),
+            Err(err) => Err(err),
         };
     }
 }
-
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct ValidEmail(String);
@@ -129,8 +126,8 @@ impl std::fmt::Display for ValidEmail {
 #[cfg(test)]
 mod tests {
     use claims::{assert_err, assert_ok};
-    use fake::faker::internet::en::SafeEmail;
     use fake::Fake;
+    use fake::faker::internet::en::SafeEmail;
 
     use super::ValidEmail;
 

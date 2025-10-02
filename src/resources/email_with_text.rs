@@ -1,4 +1,1 @@
-
-pub struct EmailWithText {
-    
-}
+pub struct EmailWithText {}
