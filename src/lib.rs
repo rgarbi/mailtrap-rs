@@ -1,3 +1,5 @@
+extern crate core;
+
 mod client;
 mod resources;
 mod types;
