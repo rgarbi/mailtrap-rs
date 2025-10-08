@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::str::FromStr;
 
-#[derive(Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Message {
     pub from: EmailAddress,
     pub to: Vec<EmailAddress>,
@@ -35,7 +35,7 @@ pub struct Message {
     pub category: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum Body {
     Text { text: String },
@@ -43,14 +43,14 @@ pub enum Body {
     TextAndHtml { text: String, html: String },
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Disposition {
     Inline,
     Attachment,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Attachment {
     pub content: String,
 
@@ -84,7 +84,7 @@ impl Attachment {
     }
 }
 
-#[derive(Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct EmailAddress {
     pub email: ValidEmail,
 
@@ -101,7 +101,7 @@ impl EmailAddress {
     }
 }
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug, PartialEq, Eq)]
 pub struct ValidMime(String);
 
 impl ValidMime {
@@ -153,7 +153,7 @@ impl<'de> Deserialize<'de> for ValidMime {
     }
 }
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug, PartialEq, Eq)]
 pub struct ValidEmail(String);
 
 impl ValidEmail {

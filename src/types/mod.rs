@@ -1,1 +1,2 @@
-mod email;
+pub mod email;
+pub mod message_builder;
