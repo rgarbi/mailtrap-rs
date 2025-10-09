@@ -19,7 +19,7 @@ impl MailtrapClient {
         api_token: String,
         timeout: Duration,
     ) -> Result<MailtrapClient, String> {
-        return match Url::parse(base_url) {
+        match Url::parse(base_url) {
             Ok(url) => Ok(MailtrapClient {
                 base_url: url,
                 api_token,
@@ -30,7 +30,7 @@ impl MailtrapClient {
                     .unwrap(),
             }),
             Err(err) => Err(format!("Could not parse URL. {}", err)),
-        };
+        }
     }
 
     pub async fn send_email(&self, message: Message) -> Result<SendEmailResponse, Error> {
@@ -50,15 +50,15 @@ impl MailtrapClient {
             .await?
             .error_for_status();
 
-        return match response {
+        match response {
             Ok(response) => {
                 let response_body = response.text().await.unwrap();
                 let send_email_response: SendEmailResponse =
                     serde_json::from_str(response_body.as_str()).unwrap();
-                return Ok(send_email_response);
+                Ok(send_email_response)
             }
             Err(err) => Err(err),
-        };
+        }
     }
 }
 
