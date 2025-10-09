@@ -22,6 +22,12 @@ impl Message {
     }
 
     /// Add a CC recipient.
+    pub fn to(mut self, addr: EmailAddress) -> Self {
+        self.to.push(addr);
+        self
+    }
+
+    /// Add a CC recipient.
     pub fn cc(mut self, addr: EmailAddress) -> Self {
         self.cc.push(addr);
         self
