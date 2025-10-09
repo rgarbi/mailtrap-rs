@@ -64,13 +64,13 @@ impl MailtrapClient {
 
 #[cfg(test)]
 mod tests {
-    use claims::assert_ok;
-    use wiremock::{Mock, MockServer, Request, ResponseTemplate};
-    use wiremock::matchers::{header, header_exists, method, path};
-    use uuid::Uuid;
+    use super::*;
     use crate::types::email::{Body, EmailAddress};
     use crate::types::response::SendEmailResponse;
-    use super::*;
+    use claims::assert_ok;
+    use uuid::Uuid;
+    use wiremock::matchers::{header, header_exists, method, path};
+    use wiremock::{Mock, MockServer, Request, ResponseTemplate};
 
     struct SendEmailBodyMatcher;
 
@@ -94,7 +94,7 @@ mod tests {
                 "api token".to_string(),
                 Duration::from_secs(10),
             )
-                .is_ok()
+            .is_ok()
         );
     }
 
@@ -106,7 +106,7 @@ mod tests {
                 "api token".to_string(),
                 Duration::from_secs(10),
             )
-                .is_err()
+            .is_err()
         );
     }
 
@@ -116,7 +116,8 @@ mod tests {
         let mailtrap_client_result = MailtrapClient::new(
             mock_server.uri().as_str(),
             "123".to_string(),
-            Duration::from_secs(30));
+            Duration::from_secs(30),
+        );
 
         let mock_response = SendEmailResponse {
             success: true,
@@ -131,7 +132,11 @@ mod tests {
             .and(path("api/send"))
             .and(method("POST".to_string()))
             .and(SendEmailBodyMatcher)
-            .respond_with(ResponseTemplate::new(200).append_header("Content-Type", "application/json").set_body_raw(mock_response_json, "application/json"))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .append_header("Content-Type", "application/json")
+                    .set_body_raw(mock_response_json, "application/json"),
+            )
             .expect(1)
             .mount(&mock_server)
             .await;
@@ -139,14 +144,23 @@ mod tests {
         assert_ok!(mailtrap_client_result.clone());
         let mailtrap_client = mailtrap_client_result.unwrap();
 
-        let address_result = EmailAddress::new("testemail@gmail.com".to_string(), Some("Tester".to_string()));
+        let address_result = EmailAddress::new(
+            "testemail@gmail.com".to_string(),
+            Some("Tester".to_string()),
+        );
         assert_ok!(address_result.clone());
 
-        let body: Body = Body::TextAndHtml { text: "Sample Body".to_string(), html: "<html><h1>Sample Body</h1></html>".to_string() };
-
+        let body: Body = Body::TextAndHtml {
+            text: "Sample Body".to_string(),
+            html: "<html><h1>Sample Body</h1></html>".to_string(),
+        };
 
         let message = Message::new(address_result.clone().unwrap(), "Test".to_string(), body)
-            .to(EmailAddress::new("totestemail@gmail.com".to_string(), Some("Tester".to_string())).unwrap())
+            .to(EmailAddress::new(
+                "totestemail@gmail.com".to_string(),
+                Some("Tester".to_string()),
+            )
+            .unwrap())
             .reply_to(address_result.unwrap());
 
         let send_result = mailtrap_client.send_email(message).await;
