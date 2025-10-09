@@ -146,7 +146,7 @@ mod tests {
             },
         );
         match b.body {
-            Body::Text { ref text } => assert_eq!(text, "hello"),
+            Body::Text { ref text } => assert_eq!(text, "some text"),
             _ => panic!("expected Body::Text"),
         }
     }
@@ -178,7 +178,7 @@ mod tests {
         );
         match b.body {
             Body::TextAndHtml { ref text, ref html } => {
-                assert_eq!(text, "hello");
+                assert_eq!(text, "some text");
                 assert_eq!(html, "<b>hi</b>");
             }
             _ => panic!("expected Body::TextAndHtml"),
