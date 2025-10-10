@@ -1,0 +1,78 @@
+# .github/workflows/publish-manual.yml
+name: Publish (manual)
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write  # needed to push tags
+
+concurrency:
+  group: publish-crate
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # we need full history to create/push tags
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Extract version from Cargo.toml
+        id: ver
+        shell: bash
+        run: |
+          # Single-crate: parse the root Cargo.toml
+          VERSION=$(sed -n 's/^version\s*=\s*"\(.*\)"/\1/p' Cargo.toml | head -n1)
+
+          # If you later have a workspace and want the root package's version,
+          # you can instead do (ensure `jq` is installed or add a step to install it):
+          # VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.manifest_path|endswith("/Cargo.toml")) | .version' | head -n1)
+
+          if [ -z "$VERSION" ]; then
+            echo "Could not determine version from Cargo.toml"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Will use tag v$VERSION"
+
+      - name: Ensure tag doesn't already exist
+        shell: bash
+        run: |
+          TAG="v${{ steps.ver.outputs.version }}"
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG already exists. Aborting."
+            exit 1
+          fi
+
+      - name: Build & test
+        run: |
+          cargo build --release
+          cargo test --all-features
+
+      - name: Package (sanity check)
+        run: cargo package --allow-dirty --no-verify
+
+      - name: Publish to crates.io
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: cargo publish --no-verify
+
+      - name: Create and push tag
+        if: ${{ success() }}
+        shell: bash
+        run: |
+          TAG="v${{ steps.ver.outputs.version }}"
+          git tag "$TAG"
+          git push origin "$TAG"
