@@ -37,7 +37,7 @@ impl MailtrapClient {
         let address = format!("{}{}", self.base_url, SEND_EMAIL_BASE_PATH);
 
         let message_body = message.to_json();
-        
+
         let response = self
             .http_client
             .post(address)
@@ -165,5 +165,4 @@ mod tests {
         let send_result = mailtrap_client.send_email(message).await;
         assert_ok!(send_result);
     }
-
 }
